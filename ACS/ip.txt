@@ -1,0 +1,1 @@
+API_KEY = "Imo nadi txt delikado mag share stick kaw sa gpt free"

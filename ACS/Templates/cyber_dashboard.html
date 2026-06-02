@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cyber Dashboard</title>
+    <script>
+      function showPage(pageId) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => (p.style.display = "none"));
+        document.getElementById(pageId).style.display = "block";
+      }
+    </script>
+  </head>
+  <body>
+    <h1>🛡️ Cyber Dashboard</h1>
+    <p>
+      Server: {{ device_name }} | IP: {{ ip_info }} | {{ city }}, {{ country }}
+      | Mode: {{ mode }}
+    </p>
+
+    <br />
+    <button onclick="showPage('dashboard')">📊 Dashboard</button>
+    <button onclick="showPage('threats')">⚠️ Threats</button>
+    <button onclick="showPage('manual_ban')">🚫 Manual Ban</button>
+    <button onclick="showPage('blacklist')">📋 Blacklist</button>
+    <a href="/logout"><button>🚪 Logout</button></a>
+
+    <!-- ── DATE FILTER ── -->
+    <br /><br />
+    <form method="GET" action="/cyber_dash" style="display: inline">
+      📅 View logs for date:
+      <input
+        type="date"
+        name="date"
+        value="{{ selected_date }}"
+        max="{{ today }}"
+      />
+      <button type="submit">Filter</button>
+      {% if selected_date != today %}
+      <a href="/cyber_dash"><button type="button">Back to Today</button></a>
+      {% endif %}
+    </form>
+    <span> — Showing: <strong>{{ selected_date }}</strong></span>
+
+    <!-- ── DASHBOARD ── -->
+    <div id="dashboard" class="page">
+      <h2>📊 Activity Summary — {{ selected_date }}</h2>
+      <p>
+        Total: <strong>{{ totals.total or 0 }}</strong> | ✅ Safe:
+        <strong>{{ totals.safe or 0 }}</strong> | ⚠️ Warning:
+        <strong>{{ totals.warning or 0 }}</strong> | 🚨 Threat:
+        <strong>{{ totals.threat or 0 }}</strong>
+      </p>
+
+      <h3>Login Logs</h3>
+      <table border="1" cellpadding="5">
+        <tr>
+          <th>#</th>
+          <th>Time</th>
+          <th>Email</th>
+          <th>IP</th>
+          <th>Location</th>
+          <th>Device</th>
+          <th>OS</th>
+          <th>Browser</th>
+          <th>Attempts</th>
+          <th>Recog. IP</th>
+          <th>Status</th>
+          <th>Category</th>
+          <th>Cause</th>
+          <th>Banned</th>
+          <th>Action</th>
+        </tr>
+        {% for r in logs %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.time_date }}</td>
+          <td>{{ r.gmail or '—' }}</td>
+          <td>{{ r.ip }}</td>
+          <td>{{ r.city }}, {{ r.country }}</td>
+          <td>{{ r.device_name or '—' }}</td>
+          <td>{{ r.operating_system or '—' }}</td>
+          <td>{{ r.browser or '—' }}</td>
+          <td><strong>{{ r.failed_attempts }}</strong></td>
+          <td>{{ 'Yes' if r.recognized_ip else 'No' }}</td>
+          <td>{{ r.login_status }}</td>
+          <td>{{ r.category }}</td>
+          <td>{{ r.cause or '—' }}</td>
+          <td>{{ '🚫 Yes' if (r.ban or r.auto_ban) else 'No' }}</td>
+          <td>
+            {% if r.ban or r.auto_ban %}
+            <a href="/unban/{{ r.ip }}"><button>✅ Unban</button></a>
+            {% else %}
+            <form method="POST" action="/ban_ip" style="display: inline">
+              <input type="hidden" name="ip_address" value="{{ r.ip }}" />
+              <input
+                type="hidden"
+                name="reason"
+                value="Manually banned from dashboard"
+              />
+              <input type="hidden" name="date" value="{{ selected_date }}" />
+              <button type="submit">🚫 Ban</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="15">No logs for {{ selected_date }}.</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- ── THREATS ── -->
+    <div id="threats" class="page" style="display: none">
+      <h2>⚠️ Suspicious &amp; Brute-Force Attempts — {{ selected_date }}</h2>
+      <table border="1" cellpadding="5">
+        <tr>
+          <th>#</th>
+          <th>Time</th>
+          <th>Email</th>
+          <th>IP</th>
+          <th>Location</th>
+          <th>Attempts</th>
+          <th>Recog. IP</th>
+          <th>Status</th>
+          <th>Category</th>
+          <th>Cause</th>
+          <th>AI Report</th>
+          <th>Action</th>
+        </tr>
+        {% for r in logs if r.category in ('WARNING', 'THREAT') %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.time_date }}</td>
+          <td>{{ r.gmail or '—' }}</td>
+          <td>{{ r.ip }}</td>
+          <td>{{ r.city }}, {{ r.region }}, {{ r.country }}</td>
+          <td><strong>{{ r.failed_attempts }}</strong></td>
+          <td>{{ 'Yes' if r.recognized_ip else 'No' }}</td>
+          <td>{{ r.login_status }}</td>
+          <td>{{ r.category }}</td>
+          <td>{{ r.cause or '—' }}</td>
+          <td>{{ r.ai_report or '—' }}</td>
+          <td>
+            {% if r.ban or r.auto_ban %}
+            <a href="/unban/{{ r.ip }}"><button>✅ Unban</button></a>
+            {% else %}
+            <form method="POST" action="/ban_ip" style="display: inline">
+              <input type="hidden" name="ip_address" value="{{ r.ip }}" />
+              <input
+                type="hidden"
+                name="reason"
+                value="Banned from threats view"
+              />
+              <input type="hidden" name="date" value="{{ selected_date }}" />
+              <button type="submit">🚫 Ban</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="12">No suspicious activity for {{ selected_date }}.</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- ── MANUAL BAN ── -->
+    <div id="manual_ban" class="page" style="display: none">
+      <h2>🚫 Manual Ban IP</h2>
+      <form method="POST" action="/ban_ip">
+        IP Address:
+        <input
+          type="text"
+          name="ip_address"
+          placeholder="e.g. 192.168.1.1"
+          required
+        /><br /><br />
+        Reason:
+        <input
+          type="text"
+          name="reason"
+          placeholder="Reason for ban"
+          required
+        /><br /><br />
+        <input type="hidden" name="date" value="{{ selected_date }}" />
+        <button type="submit">Ban IP</button>
+      </form>
+    </div>
+
+    <!-- ── BLACKLIST ── -->
+    <div id="blacklist" class="page" style="display: none">
+      <h2>📋 Blacklisted IPs ({{ blacklist | length }})</h2>
+      <table border="1" cellpadding="5">
+        <tr>
+          <th>#</th>
+          <th>IP Address</th>
+          <th>Country</th>
+          <th>Cause</th>
+          <th>Date Banned</th>
+          <th>Action</th>
+        </tr>
+        {% for ban in blacklist %}
+        <tr>
+          <td>{{ ban.id }}</td>
+          <td>{{ ban.ip }}</td>
+          <td>{{ ban.country or '—' }}</td>
+          <td>{{ ban.cause or '—' }}</td>
+          <td>{{ ban.date_banned }}</td>
+          <td>
+            <a href="/unban/{{ ban.ip }}"><button>✅ Unban</button></a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6">No banned IPs.</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ACS GUARD</title>
+  </head>
+  <body>
+    <h1>ACS GUARD</h1>
+
+    <br />
+
+    <!-- Changed action from api_scan to home_page -->
+    <form method="POST" action="{{ url_for('home_page') }}">
+      <label for="admin">Username:</label>
+      <input
+        type="text"
+        id="admin"
+        name="admin"
+        placeholder="Name authorization"
+      />
+      <label for="passcode">Password:</label>
+      <input type="text" id="passcode" name="passcode" placeholder="Passkey" />
+      <input type="submit" value="login" />
+    </form>
+  </body>
+</html>

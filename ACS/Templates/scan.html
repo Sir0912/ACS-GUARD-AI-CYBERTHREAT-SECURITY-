@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Scanner</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>RFID Security Scanner</h1>
+    <p id="status">Connecting to scanner...</p>
+
+    <script>
+      const socket = io();
+
+      socket.on("connect", () => {
+        $("#status").text("Ready to scan...");
+      });
+
+      socket.on("card_scanned", function (data) {
+        if (data.authorized) {
+          $("#status").text("Access Granted: " + data.name);
+          setTimeout(() => {
+            window.location.href = "/cyber_dash";
+          }, 1500);
+        } else {
+          $("#status").text("Access Denied: Unknown RFID");
+          setTimeout(() => {
+            $("#status").text("Ready to scan...");
+          }, 3000);
+        }
+      });
+    </script>
+  </body>
+</html>

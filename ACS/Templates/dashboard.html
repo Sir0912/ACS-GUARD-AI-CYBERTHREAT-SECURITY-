@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Employee Dashboard</title>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    "
+  >
+    <nav
+      style="
+        background: #2c3e50;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      "
+    >
+      <h2 style="margin: 0">👥 Employee Portal</h2>
+      <a
+        href="/logout"
+        style="
+          color: #ecf0f1;
+          text-decoration: none;
+          background: #e74c3c;
+          padding: 8px 15px;
+          border-radius: 5px;
+        "
+        >Logout</a
+      >
+    </nav>
+
+    <div
+      style="
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <h1 style="color: #2c3e50">Welcome, {{ name }}!</h1>
+      <hr />
+      <p><strong>Email:</strong> {{ email }}</p>
+      <p><strong>Your IP:</strong> {{ ip }}</p>
+      <p id="ai-status" style="color: gray; font-style: italic">
+        Checking security status...
+      </p>
+    </div>
+
+    <script>
+      // FIX: AI call is already done server-side in emp.py /login
+      // This just shows a confirmation message to the employee
+      document.getElementById("ai-status").innerText =
+        "✅ Your login has been logged and analyzed by the security system.";
+    </script>
+  </body>
+</html>
