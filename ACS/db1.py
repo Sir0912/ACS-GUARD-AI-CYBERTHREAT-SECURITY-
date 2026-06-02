@@ -3,7 +3,7 @@ import pymysql
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "Myservermybestfriend09941991294",
+    "password": "",
     "database": "innovex_2026"
 }
 
